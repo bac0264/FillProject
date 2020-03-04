@@ -6,26 +6,29 @@ using UnityEngine.UI;
 
 public class BoardGame : MonoBehaviour
 {
-    public BackgroundSlot bgPref;
+    public DotSlot bgPref;
     public Dot dotPref;
-    public const int MAX_COL = 10;
-    public const int MAX_ROW = 10;
+    public const int MAX_COL = 9;
+    public const int MAX_ROW = 18;
+    public const int MAX_ROW_USE = MAX_ROW / 2;
     public bool touching;
     public Transform BackgroundContainer;
     public Transform DotContainer;
     private Dot[,] dots;
-    private BackgroundSlot[,] bgSlots;
+    private DotSlot[,] bgSlots;
     public int countDown;
     public bool IsSpecial;
     public Text timeCountDown;
+    public bool allowClicking;
     IAlogism alogism;
     private void Awake()
     {
         DIContainer.SetModule<IAlogism, NormalAlogism>();
         alogism = DIContainer.GetModule<IAlogism>();
         dots = new Dot[MAX_COL, MAX_ROW];
-        bgSlots = new BackgroundSlot[MAX_COL, MAX_ROW];
+        bgSlots = new DotSlot[MAX_COL, MAX_ROW];
         Setup();
+        allowClicking = true;
     }
     public void Setup()
     {
@@ -36,7 +39,7 @@ public class BoardGame : MonoBehaviour
             {
                 Vector2 pos = new Vector2(i-2, j-2);
                 GameObject initBG = Instantiate(bgPref.gameObject, pos, Quaternion.identity);
-                bgSlots[i, j] = initBG.GetComponent<BackgroundSlot>();
+                bgSlots[i, j] = initBG.GetComponent<DotSlot>();
                 bgSlots[i, j].transform.SetParent(BackgroundContainer);
                 GameObject initDot = Instantiate(dotPref.gameObject, pos, Quaternion.identity);
                 Dot dot = initDot.GetComponent<Dot>();
@@ -45,6 +48,11 @@ public class BoardGame : MonoBehaviour
                 dot.index = count;
                 dots[i, j] = initDot.GetComponent<Dot>();
                 count++;
+                if (j >= MAX_ROW_USE)
+                {
+                   // bgSlots[i, j].gameObject.SetActive(false);
+                    //dots[i, j].gameObject.SetActive(false);
+                }
             }
         }
     }
@@ -73,8 +81,8 @@ public class BoardGame : MonoBehaviour
         Dot dot = DotClicked(mousePosition);
         if (dot != null)
         {
-            alogism.SetupAlogism(dot, dots, MAX_ROW, MAX_COL);
-            Refill();
+            alogism.SetupAlogism(dot, dots, MAX_ROW_USE, MAX_COL);
+            StartCoroutine(Arranging());
         }
     }
 
@@ -84,42 +92,45 @@ public class BoardGame : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // Proces click
-        #region
         if (Input.GetKey("escape"))
         {
             Application.Quit();
         }
-        if (touching)
+        // Proces click
+        #region
+        if (allowClicking)
         {
-            touchHold(Input.mousePosition);
-        }
-        if (Input.GetMouseButtonDown(0) && !touching)
-        {
-            touching = true;
-            touchBegin(Input.mousePosition);
-        }
-
-        if (Input.GetMouseButtonUp(0))
-        {
-            touching = false;
-            touchEnd(Input.mousePosition);
-        }
-        if (Input.touchCount > 0)
-        {
-            if (Input.GetTouch(0).phase == TouchPhase.Began)
+            if (touching)
+            {
+                touchHold(Input.mousePosition);
+            }
+            if (Input.GetMouseButtonDown(0) && !touching)
             {
                 touching = true;
-                touchBegin(Input.GetTouch(0).position);
+                touchBegin(Input.mousePosition);
             }
-            if (Input.GetTouch(0).phase == TouchPhase.Moved)
-            {
-                touchHold(Input.GetTouch(0).position);
-            }
-            if (Input.GetTouch(0).phase == TouchPhase.Ended)
+
+            if (Input.GetMouseButtonUp(0))
             {
                 touching = false;
-                touchEnd(Input.GetTouch(0).position);
+                touchEnd(Input.mousePosition);
+            }
+            if (Input.touchCount > 0)
+            {
+                if (Input.GetTouch(0).phase == TouchPhase.Began)
+                {
+                    touching = true;
+                    touchBegin(Input.GetTouch(0).position);
+                }
+                if (Input.GetTouch(0).phase == TouchPhase.Moved)
+                {
+                    touchHold(Input.GetTouch(0).position);
+                }
+                if (Input.GetTouch(0).phase == TouchPhase.Ended)
+                {
+                    touching = false;
+                    touchEnd(Input.GetTouch(0).position);
+                }
             }
         }
         #endregion
@@ -171,24 +182,48 @@ public class BoardGame : MonoBehaviour
     }
     public void Refill()
     {
-        StartCoroutine(_Refill());
-    }
-    IEnumerator _Refill()
-    {
-        yield return new WaitForSeconds(0.5f);
         for (int col = 0; col < MAX_COL; col++)
         {
             for (int row = 0; row < MAX_ROW; row++)
             {
-                if (dots[col, row] == null)
+                if (!dots[col, row].dot.enabled)
                 {
-                    Vector2 pos = new Vector2(col - 2, row - 2);
-                    GameObject initDot = Instantiate(dotPref.gameObject, pos, Quaternion.identity);
-                    Dot dot = initDot.GetComponent<Dot>();
-                    dot.Setup(col, row);
-                    dots[col, row] = dot;
+                    dots[col,row].Setup(col, row);
                 }
             }
         }
+    }
+
+    public IEnumerator Arranging()
+    {
+       // allowClicking = false;
+        //yield return new WaitForSeconds(0.1f);
+        int nullCount = 0;
+        for (int col = 0; col < MAX_COL; col++)
+        {
+            for (int row = 0; row < MAX_ROW; row++)
+            {
+                //Debug.Log("col: " + col + ", row: " + row + " : " + dots[col, row].dot.enabled);
+                if (!dots[col, row].dot.enabled)
+                {
+
+                    //Debug.Log("col: " + col+", row: " + row);
+                    nullCount++;
+                }
+                else if(nullCount > 0)
+                {
+                    dots[col, row - nullCount].Arranging(dots[col, row]);
+                    int _col = col;
+                    int _row = row;
+                   // yield return new WaitUntil(() => !dots[_col, _row].dot.enabled);
+                    //yield return new WaitForSeconds
+                }
+            }
+            nullCount = 0;
+        }
+
+        yield return new WaitForSeconds(0.3f);
+        Refill();
+        allowClicking = true;
     }
 }

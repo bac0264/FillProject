@@ -63,13 +63,21 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Script\BackgroundSlot.cs" />
+    <Compile Include="Assets\Demigiant\DOTween\Modules\DOTweenModuleAudio.cs" />
+    <Compile Include="Assets\Demigiant\DOTween\Modules\DOTweenModulePhysics.cs" />
+    <Compile Include="Assets\Demigiant\DOTween\Modules\DOTweenModulePhysics2D.cs" />
+    <Compile Include="Assets\Demigiant\DOTween\Modules\DOTweenModuleSprite.cs" />
+    <Compile Include="Assets\Demigiant\DOTween\Modules\DOTweenModuleUI.cs" />
+    <Compile Include="Assets\Demigiant\DOTween\Modules\DOTweenModuleUnityVersion.cs" />
+    <Compile Include="Assets\Demigiant\DOTween\Modules\DOTweenModuleUtils.cs" />
     <Compile Include="Assets\Script\BoardGame.cs" />
     <Compile Include="Assets\Script\DIContainer.cs" />
     <Compile Include="Assets\Script\Dot.cs" />
+    <Compile Include="Assets\Script\DotSlot.cs" />
     <Compile Include="Assets\Script\IAlogism\IAlogism.cs" />
     <Compile Include="Assets\Script\IAlogism\Loang\Loang.cs" />
     <Compile Include="Assets\Script\IAlogism\Loang\NormalAlogism.cs" />
+    <None Include="Assets\Demigiant\DOTween\readme.txt" />
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>C:/Users/bacnt/OneDrive/Desktop/FillProject/FillProject/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>
@@ -294,6 +302,9 @@
     </Reference>
     <Reference Include="Unity.Analytics.Tracker">
       <HintPath>C:/Users/bacnt/OneDrive/Desktop/FillProject/FillProject/Library/PackageCache/com.unity.analytics@3.2.2/Unity.Analytics.Tracker.dll</HintPath>
+    </Reference>
+    <Reference Include="DOTween">
+      <HintPath>C:/Users/bacnt/OneDrive/Desktop/FillProject/FillProject/Assets/Demigiant/DOTween/DOTween.dll</HintPath>
     </Reference>
     <Reference Include="netstandard">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2018.3.14f1/Editor/Data/NetStandard/ref/2.0.0/netstandard.dll</HintPath>

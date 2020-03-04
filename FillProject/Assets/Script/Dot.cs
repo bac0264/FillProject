@@ -1,13 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
-
+using DG.Tweening;
 public class Dot : MonoBehaviour
 {
     public int index;
     public int col;
     public int row;
-    SpriteRenderer dot;
+    public SpriteRenderer dot;
     CircleCollider2D colider;
     public int marked;
     public int color;
@@ -28,7 +28,8 @@ public class Dot : MonoBehaviour
     }
     void SetupColor()
     {
-        dot = GetComponent<SpriteRenderer>();
+        if (dot == null)
+            dot = GetComponent<SpriteRenderer>();
         int random = Random.Range(0, 3);
         if (random == 0)
         {
@@ -45,20 +46,41 @@ public class Dot : MonoBehaviour
             dot.color = Color.green;
             color = 2;
         }
+        dot.enabled = true;
 
     }
     void SetupColider()
     {
-        colider = gameObject.AddComponent(typeof(CircleCollider2D)) as CircleCollider2D;
+        if (colider == null)
+            colider = gameObject.AddComponent(typeof(CircleCollider2D)) as CircleCollider2D;
     }
     #endregion
     // Check relative dot
+    public void Arranging(Dot _dot)
+    {
+        StartCoroutine(Move(_dot));
+    }
+    IEnumerator Move(Dot _dot)
+    {
+        Vector2 oldPos = _dot.transform.position;
+        Tween tween = _dot.transform.DOLocalMoveY(this.transform.position.y, 0.3f);
+        // yield return new WaitForSeconds(1f);
+        yield return tween.WaitForCompletion();
+        dot.color = _dot.dot.color;
+        color = _dot.color;
+        _dot.color = -1;
+        _dot.dot.enabled = false;
+        _dot.dot.transform.position = oldPos;
+        dot.enabled = true;
+        //yield return null;
+        //Destroy(_dot);
+    }
     public void RemoveOldAndSetupNewDot()
     {
         dot.enabled = false;
         color = -1;
         marked = 0;
-        Destroy(this);
+        //Destroy(this);
     }
     public void Check(Dot[,] dots)
     {
@@ -76,12 +98,10 @@ public class Dot : MonoBehaviour
         int row = this.row + 1;
 
         if (row >= BoardGame.MAX_ROW) return;
-        Debug.Log(dots[col, row].marked);
-        if(dots[col, row].marked != 1 && dots[col,row].color == color && color != -1)
+        // Debug.Log(dots[col, row].marked);
+        if (dots[col, row].marked != 1 && dots[col, row].color == color && color != -1)
         {
-            Debug.Log(dots[col, row].marked);
             dots[col, row].Check(dots);
-            Debug.Log(dots[col, row].marked);
         }
     }
     public void checkLeft(Dot[,] dots)
