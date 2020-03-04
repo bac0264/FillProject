@@ -22,6 +22,10 @@ public class DIContainer
 
     private static void SetModule(Type interfaceType, Type moduleType)
     {
+        if (ResgisteredModules.ContainsKey(interfaceType))
+        {
+            ResgisteredModules.Remove(interfaceType);
+        }
         //Kiểm tra module đã implement interface chưa
         if (!interfaceType.IsAssignableFrom(moduleType))
         {

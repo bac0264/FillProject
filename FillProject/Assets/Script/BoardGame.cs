@@ -2,22 +2,26 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BoardGame : MonoBehaviour
 {
     public BackgroundSlot bgPref;
     public Dot dotPref;
-    public const int MAX_COL = 4;
-    public const int MAX_ROW = 5;
+    public const int MAX_COL = 10;
+    public const int MAX_ROW = 10;
     public bool touching;
     public Transform BackgroundContainer;
     public Transform DotContainer;
     private Dot[,] dots;
     private BackgroundSlot[,] bgSlots;
+    public int countDown;
+    public bool IsSpecial;
+    public Text timeCountDown;
     IAlogism alogism;
     private void Awake()
     {
-        DIContainer.SetModule<IAlogism, Loang>();
+        DIContainer.SetModule<IAlogism, NormalAlogism>();
         alogism = DIContainer.GetModule<IAlogism>();
         dots = new Dot[MAX_COL, MAX_ROW];
         bgSlots = new BackgroundSlot[MAX_COL, MAX_ROW];
@@ -25,19 +29,22 @@ public class BoardGame : MonoBehaviour
     }
     public void Setup()
     {
+        int count = 0;
         for (int i = 0; i < MAX_COL; i++)
         {
             for (int j = 0; j < MAX_ROW; j++)
             {
-                Vector2 pos = new Vector2(i, j);
+                Vector2 pos = new Vector2(i-2, j-2);
                 GameObject initBG = Instantiate(bgPref.gameObject, pos, Quaternion.identity);
                 bgSlots[i, j] = initBG.GetComponent<BackgroundSlot>();
                 bgSlots[i, j].transform.SetParent(BackgroundContainer);
                 GameObject initDot = Instantiate(dotPref.gameObject, pos, Quaternion.identity);
                 Dot dot = initDot.GetComponent<Dot>();
                 dot.transform.SetParent(DotContainer);
-                dot.Setup(pos);
+                dot.Setup(i,j);
+                dot.index = count;
                 dots[i, j] = initDot.GetComponent<Dot>();
+                count++;
             }
         }
     }
@@ -56,8 +63,29 @@ public class BoardGame : MonoBehaviour
         }
         return null;
     }
+
+    private void touchEnd(Vector3 mousePosition)
+    {
+    }
+
+    private void touchBegin(Vector3 mousePosition)
+    {
+        Dot dot = DotClicked(mousePosition);
+        if (dot != null)
+        {
+            alogism.SetupAlogism(dot, dots, MAX_ROW, MAX_COL);
+            Refill();
+        }
+    }
+
+    private void touchHold(Vector3 mousePosition)
+    {
+    }
+
     private void FixedUpdate()
     {
+        // Proces click
+        #region
         if (Input.GetKey("escape"))
         {
             Application.Quit();
@@ -94,20 +122,73 @@ public class BoardGame : MonoBehaviour
                 touchEnd(Input.GetTouch(0).position);
             }
         }
-    }
+        #endregion
 
-    private void touchEnd(Vector3 mousePosition)
+        if (IsSpecial)
+        {
+            Special();
+        }
+    }
+    public void Special()
     {
+        timeCountDown.gameObject.SetActive(true);
+        IsSpecial = true;
+        StartCoroutine(_special());
+        IsSpecial = false;
     }
-
-    private void touchBegin(Vector3 mousePosition)
+    IEnumerator _special()
     {
-        Dot dot = DotClicked(mousePosition);
-        if (dot != null) alogism.SetupAlogism(dot, dots, MAX_ROW, MAX_COL);
+        countDown = 10;
+        DIContainer.SetModule<IAlogism, Loang>();
+        alogism = DIContainer.GetModule<IAlogism>();
+        Debug.Log("Loang");
+        TimeCountDown();
+        yield return new WaitUntil(()=> countDown == 0);
+        DIContainer.SetModule<IAlogism, NormalAlogism>();
+        alogism = DIContainer.GetModule<IAlogism>();
+        Debug.Log("Normal");
     }
-
-    private void touchHold(Vector3 mousePosition)
+   
+    public void TimeCountDown()
     {
+        StartCoroutine(_TimeCountDown());
     }
-
+    IEnumerator _TimeCountDown()
+    {
+        timeCountDown.text = countDown.ToString();
+        if (countDown <= 0)
+        {
+            countDown = 0;
+            timeCountDown.gameObject.SetActive(false);
+            yield return null;
+        }
+        else
+        {
+            yield return new WaitForSeconds(1f);
+            countDown--;
+            TimeCountDown();
+        }
+    }
+    public void Refill()
+    {
+        StartCoroutine(_Refill());
+    }
+    IEnumerator _Refill()
+    {
+        yield return new WaitForSeconds(0.5f);
+        for (int col = 0; col < MAX_COL; col++)
+        {
+            for (int row = 0; row < MAX_ROW; row++)
+            {
+                if (dots[col, row] == null)
+                {
+                    Vector2 pos = new Vector2(col - 2, row - 2);
+                    GameObject initDot = Instantiate(dotPref.gameObject, pos, Quaternion.identity);
+                    Dot dot = initDot.GetComponent<Dot>();
+                    dot.Setup(col, row);
+                    dots[col, row] = dot;
+                }
+            }
+        }
+    }
 }

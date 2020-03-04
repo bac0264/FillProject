@@ -4,22 +4,27 @@ using UnityEngine.UI;
 
 public class Dot : MonoBehaviour
 {
-    public Vector2 pos;
+    public int index;
+    public int col;
+    public int row;
     SpriteRenderer dot;
     CircleCollider2D colider;
+    public int marked;
     public int color;
     // Setup Dot
     #region
-    public void Setup(Vector2 pos)
+    public void Setup(int column, int row)
     {
-        SetupPos(pos);
+        SetupPos(column, row);
         SetupColor();
         SetupColider();
     }
-    void SetupPos(Vector2 pos)
+    void SetupPos(int col, int row)
     {
         // pos.x index colum, pos.y index row
-        this.pos = pos;
+        this.col = col;
+        this.row = row;
+        name = "dot[" + col + "," + row + "]";
     }
     void SetupColor()
     {
@@ -48,9 +53,68 @@ public class Dot : MonoBehaviour
     }
     #endregion
     // Check relative dot
-    public void RemoveDot()
+    public void RemoveOldAndSetupNewDot()
     {
         dot.enabled = false;
         color = -1;
+        marked = 0;
+        Destroy(this);
+    }
+    public void Check(Dot[,] dots)
+    {
+        marked = 1;
+        checkRight(dots);
+        checkLeft(dots);
+        checkUp(dots);
+        checkDown(dots);
+        RemoveOldAndSetupNewDot();
+        //Debug.Log(this.index);
+    }
+    public void checkRight(Dot[,] dots)
+    {
+        int col = this.col;
+        int row = this.row + 1;
+
+        if (row >= BoardGame.MAX_ROW) return;
+        Debug.Log(dots[col, row].marked);
+        if(dots[col, row].marked != 1 && dots[col,row].color == color && color != -1)
+        {
+            Debug.Log(dots[col, row].marked);
+            dots[col, row].Check(dots);
+            Debug.Log(dots[col, row].marked);
+        }
+    }
+    public void checkLeft(Dot[,] dots)
+    {
+        int col = this.col;
+        int row = this.row - 1;
+
+        if (row < 0) return;
+        if (dots[col, row].marked != 1 && dots[col, row].color == color)
+        {
+            dots[col, row].Check(dots);
+        }
+    }
+    public void checkUp(Dot[,] dots)
+    {
+        int col = this.col - 1;
+        int row = this.row;
+
+        if (col < 0) return;
+        if (dots[col, row].marked != 1 && dots[col, row].color == color)
+        {
+            dots[col, row].Check(dots);
+        }
+    }
+    public void checkDown(Dot[,] dots)
+    {
+        int col = this.col + 1;
+        int row = this.row;
+
+        if (col >= BoardGame.MAX_COL) return;
+        if (dots[col, row].marked != 1 && dots[col, row].color == color)
+        {
+            dots[col, row].Check(dots);
+        }
     }
 }
