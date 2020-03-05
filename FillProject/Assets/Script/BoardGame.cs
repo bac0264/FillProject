@@ -186,7 +186,7 @@ public class BoardGame : MonoBehaviour
         {
             for (int row = 0; row < MAX_ROW; row++)
             {
-                if (!dots[col, row].dot.enabled)
+                if (dots[col, row].fill == 0)
                 {
                     dots[col,row].Setup(col, row);
                 }
@@ -196,7 +196,7 @@ public class BoardGame : MonoBehaviour
 
     public IEnumerator Arranging()
     {
-       // allowClicking = false;
+        allowClicking = false;
         //yield return new WaitForSeconds(0.1f);
         int nullCount = 0;
         for (int col = 0; col < MAX_COL; col++)
@@ -204,7 +204,7 @@ public class BoardGame : MonoBehaviour
             for (int row = 0; row < MAX_ROW; row++)
             {
                 //Debug.Log("col: " + col + ", row: " + row + " : " + dots[col, row].dot.enabled);
-                if (!dots[col, row].dot.enabled)
+                if (dots[col, row].fill == 0)
                 {
 
                     //Debug.Log("col: " + col+", row: " + row);
@@ -222,7 +222,7 @@ public class BoardGame : MonoBehaviour
             nullCount = 0;
         }
 
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(0);
         Refill();
         allowClicking = true;
     }

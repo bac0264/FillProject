@@ -11,6 +11,7 @@ public class Dot : MonoBehaviour
     CircleCollider2D colider;
     public int marked;
     public int color;
+    public int fill;
     // Setup Dot
     #region
     public void Setup(int column, int row)
@@ -18,6 +19,7 @@ public class Dot : MonoBehaviour
         SetupPos(column, row);
         SetupColor();
         SetupColider();
+        SetupFill();
     }
     void SetupPos(int col, int row)
     {
@@ -54,6 +56,10 @@ public class Dot : MonoBehaviour
         if (colider == null)
             colider = gameObject.AddComponent(typeof(CircleCollider2D)) as CircleCollider2D;
     }
+    void SetupFill()
+    {
+        fill = 1;
+    }
     #endregion
     // Check relative dot
     public void Arranging(Dot _dot)
@@ -64,6 +70,8 @@ public class Dot : MonoBehaviour
     {
         Vector2 oldPos = _dot.transform.position;
         Tween tween = _dot.transform.DOLocalMoveY(this.transform.position.y, 0.3f);
+        fill = 1;
+        _dot.fill = 0;
         // yield return new WaitForSeconds(1f);
         yield return tween.WaitForCompletion();
         dot.color = _dot.dot.color;
@@ -80,6 +88,7 @@ public class Dot : MonoBehaviour
         dot.enabled = false;
         color = -1;
         marked = 0;
+        fill = 0;
         //Destroy(this);
     }
     public void Check(Dot[,] dots)
