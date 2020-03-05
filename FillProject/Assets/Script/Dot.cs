@@ -62,24 +62,25 @@ public class Dot : MonoBehaviour
     }
     #endregion
     // Check relative dot
-    public void Arranging(Dot _dot)
+    public void Arranging(Dot _dot, bool check)
     {
-        StartCoroutine(Move(_dot));
+        StartCoroutine(Move(_dot, check));
     }
-    IEnumerator Move(Dot _dot)
+    IEnumerator Move(Dot _dot, bool check)
     {
         Vector2 oldPos = _dot.transform.position;
-        Tween tween = _dot.transform.DOLocalMoveY(this.transform.position.y, 0.3f);
-        fill = 1;
-        _dot.fill = 0;
+        _dot.dot.color = dot.color;
+        _dot.dot.transform.position = dot.transform.position;
+        _dot.color = color;
+        _dot.fill = 1;
+        _dot.dot.enabled = true;
+        Tween tween = _dot.transform.DOLocalMoveY(oldPos.y, 0.3f);
+        dot.enabled = false;
+        color = -1;
+        fill = 0;
         // yield return new WaitForSeconds(1f);
-        yield return tween.WaitForCompletion();
-        dot.color = _dot.dot.color;
-        color = _dot.color;
-        _dot.color = -1;
-        _dot.dot.enabled = false;
-        _dot.dot.transform.position = oldPos;
-        dot.enabled = true;
+        yield return new WaitUntil(() => check);
+        tween.Complete();
         //yield return null;
         //Destroy(_dot);
     }

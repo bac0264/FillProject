@@ -3,14 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
+using DG.Tweening;
 public class BoardGame : MonoBehaviour
 {
     public DotSlot bgPref;
     public Dot dotPref;
-    public const int MAX_COL = 9;
-    public const int MAX_ROW = 18;
-    public const int MAX_ROW_USE = MAX_ROW / 2;
+    public const int MAX_COL = 20;
+    public const int MAX_COL_USE = MAX_COL / 4;
+    public const int MAX_ROW = 20;
+    public const int MAX_ROW_USE = MAX_ROW / 4;
     public bool touching;
     public Transform BackgroundContainer;
     public Transform DotContainer;
@@ -48,10 +49,10 @@ public class BoardGame : MonoBehaviour
                 dot.index = count;
                 dots[i, j] = initDot.GetComponent<Dot>();
                 count++;
-                if (j >= MAX_ROW_USE)
+                if (j >= MAX_ROW_USE || i >= MAX_COL_USE)
                 {
-                   // bgSlots[i, j].gameObject.SetActive(false);
-                    //dots[i, j].gameObject.SetActive(false);
+                    bgSlots[i, j].gameObject.SetActive(false);
+                    dots[i, j].gameObject.SetActive(false);
                 }
             }
         }
@@ -81,7 +82,7 @@ public class BoardGame : MonoBehaviour
         Dot dot = DotClicked(mousePosition);
         if (dot != null)
         {
-            alogism.SetupAlogism(dot, dots, MAX_ROW_USE, MAX_COL);
+            alogism.SetupAlogism(dot, dots, MAX_ROW_USE, MAX_COL_USE);
             StartCoroutine(Arranging());
         }
     }
@@ -212,18 +213,15 @@ public class BoardGame : MonoBehaviour
                 }
                 else if(nullCount > 0)
                 {
-                    dots[col, row - nullCount].Arranging(dots[col, row]);
-                    int _col = col;
-                    int _row = row;
+                    dots[col, row].Arranging(dots[col, row - nullCount], allowClicking);
                    // yield return new WaitUntil(() => !dots[_col, _row].dot.enabled);
                     //yield return new WaitForSeconds
                 }
             }
             nullCount = 0;
         }
-
-        yield return new WaitForSeconds(0);
-        Refill();
+        yield return new WaitForSeconds(0.2f);
         allowClicking = true;
+        Refill();
     }
 }
